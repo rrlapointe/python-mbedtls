@@ -7,7 +7,7 @@ import pytest
 @pytest.mark.skipif(
     sys.version_info < (3, 6), reason="requires python3.6 or higher"
 )
-class TestAESCrypt2:
+class TestCryptAndHash:
     def test_encrypt_decrypt(self, randbytes, tmpdir):
         infile = tmpdir.join("test.in")
         aesfile = tmpdir.join("test.aes")
@@ -16,7 +16,7 @@ class TestAESCrypt2:
         infile.write_binary(buffer)
         enc = subprocess.run(
             [
-                "programs/aes/aescrypt2.py",
+                "programs/aes/crypt_and_hash",
                 "--encrypt",
                 "--key",
                 "123",
@@ -29,7 +29,7 @@ class TestAESCrypt2:
         assert enc.returncode == 0
         dec = subprocess.run(
             [
-                "programs/aes/aescrypt2.py",
+                "programs/aes/crypt_and_hash",
                 "--decrypt",
                 "--key",
                 "123",
