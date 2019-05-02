@@ -1,0 +1,2 @@
+#!/bin/sh
+crypt_and_hash --cipher AES-256-ECB --digest SHA256 "$@"
