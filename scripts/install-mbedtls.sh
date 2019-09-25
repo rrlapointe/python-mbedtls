@@ -3,40 +3,75 @@
 
 set -ex
 
-if [ $# -le 1 ]; then
+if [ "$(uname -s)" = "Linux" ]; then
+	SED="sed -re"
+else
+	SED="sed -E"
+fi
+
+
+usage() {
 	cat <<-EOF
 
 	usage:
 	  $0 SRCDIR [DESTDIR]
-	
+
 	Install a mbedtls from the sources in SRCDIR to DESTDIR.
 
 	EOF
-	exit 1
-else
-	srcdir="$1"
-	destdir="${2:-/usr/local}"
+}
+
+
+build_make() {
+	$SED -i.bk "s (^DESTDIR=).* \\1$destdir g" Makefile
+
+	CFLAGS="-DMBEDTLS_ARIA_C=ON" \
+	SHARED="ON" \
+	make -j lib
+	make -j install
+}
+
+
+build_cmake() {
+	mkdir build
+	cd build
+	cmake .. \
+		-DCMAKE_INSTALL_PREFIX=$destdir \
+		-DMBEDTLS_ARIS_C=ON \
+		-DENABLE_TESTING=OFF \
+		-DUSE_SHARED_MBEDTLS_LIBRARY=ON \
+		-DUSE_STATIC_MBEDTLS_LIBRARY=OFF
+	make -j lib
+	make -j install
+}
+
+
+main() {
+	if [ $# -lt 1 ]; then
+		usage
+		exit 1
+	fi
+
+	uname -s
+
+	readonly srcdir="$1"
+	local destdir="${2:-/usr/local}"
 	case $destdir in
 		/*) ;;
 		*) destdir="$PWD/$destdir";;
 	esac
-fi
+
+	rm -rf $destdir
+
+	cd $srcdir
+	mkdir -p $destdir
+
+	if [ -x "$(which cmakex)" ]; then
+		build_cmake $destdir
+	else
+		build_make $destdir
+	fi
+}
 
 
-mkdir -p "$destdir"
-cd "$srcdir"
-uname -s
-if [ "$(uname -s)" = "Linux" ]; then
-	sed -i.bk -re "s (^DESTDIR=).* \\1$destdir g" Makefile
-else
-	sed -i.bk -E "s (^DESTDIR=).* \\1$destdir g" Makefile
-fi
-
-[ -d "build" ] && rm -ri build
-mkdir build
-cd build
-
-CFLAGS="-DMBEDTLS_ARIA_C=ON" \
-SHARED="ON" \
-make -C .. -j lib
-make -C .. -j install
+main "$@"
