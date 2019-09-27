@@ -130,7 +130,7 @@ jobs:
             eval "$(pyenv init -)"
             pyenv shell 2.7.16 3.4.10 3.5.7 3.6.9 3.7.4
             . venv/bin/activate
-            tox -q -p auto -e py27,py34,py35,py36,py37,doctest
+            tox -q -p auto --parallel-live -e py27,py34,py35,py36,py37,doctest
 
       - run:
           name: Measure coverage
