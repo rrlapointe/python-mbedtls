@@ -29,14 +29,14 @@ make_destdir() {
 
 
 enter_make() {
+	rm -rf $builddir
 	cp -R $srcdir $builddir
 	cd $builddir
 }
 
 
 exit_make() {
-	cd $srcdir
-	rm -rf $builddir
+	echo -n
 }
 
 
