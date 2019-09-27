@@ -36,7 +36,7 @@ fi
 mkdir build
 cd build
 
-CFLAGS="-DMBEDTLS_ARIA_C=ON" \
+CFLAGS="$CFLAGS -DMBEDTLS_ARIA_C=ON" \
 SHARED="ON" \
 make -C .. -j lib
 make -C .. -j install

@@ -107,6 +107,7 @@ jobs:
           command: |
             VERSION=2.16.3
             DESTDIR=$HOME/lib/$VERSION
+            CFLAGS="-DMBEDTLS_MD2_C -DMBEDTLS_MD4_C"
             sudo apt-get install cmake
             sudo ./scripts/download-mbedtls.sh $VERSION $DESTDIR/src
             sudo ./scripts/install-mbedtls.sh $DESTDIR/src $DESTDIR
