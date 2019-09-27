@@ -22,25 +22,29 @@ usage() {
 }
 
 
+make_destdir() {
+	rm -rf $destdir
+	mkdir -p $destdir
+}
+
+
+enter_make() {
+	cp -R $srcdir $builddir
+	cd $builddir
+}
+
+
+exit_make() {
+	cd $srcdir
+	rm -rf $builddir
+}
+
+
 build_make() {
 	$SED -i.bk "s (^DESTDIR=).* \\1$destdir g" Makefile
 
 	CFLAGS="-DMBEDTLS_ARIA_C=ON" \
 	SHARED="ON" \
-	make -j lib
-	make -j install
-}
-
-
-build_cmake() {
-	mkdir build
-	cd build
-	cmake .. \
-		-DCMAKE_INSTALL_PREFIX=$destdir \
-		-DMBEDTLS_ARIS_C=ON \
-		-DENABLE_TESTING=OFF \
-		-DUSE_SHARED_MBEDTLS_LIBRARY=ON \
-		-DUSE_STATIC_MBEDTLS_LIBRARY=OFF
 	make -j lib
 	make -j install
 }
@@ -52,25 +56,18 @@ main() {
 		exit 1
 	fi
 
-	uname -s
-
 	readonly srcdir="$1"
+	readonly builddir="$srcdir/../.build"
+
 	local destdir="${2:-/usr/local}"
 	case $destdir in
 		/*) ;;
 		*) destdir="$PWD/$destdir";;
 	esac
 
-	rm -rf $destdir
-
-	cd $srcdir
-	mkdir -p $destdir
-
-	if [ -x "$(which cmakex)" ]; then
-		build_cmake $destdir
-	else
-		build_make $destdir
-	fi
+	enter_make
+	build_make || true
+	exit_make
 }
 
 
