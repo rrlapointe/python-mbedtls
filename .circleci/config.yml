@@ -120,10 +120,13 @@ jobs:
             python -m pip install --user cython pytest-black pytest-cov
             PYTHONPATH=$(pwd)/src/:$PYTHONPATH
             export PYTHONPATH
-            python -m pytest --black --cov=src/ tests/
+            python -m coverage run -m pytest --black tests/
       - run:
           name: Coverage
           command: |
+            PYTHONPATH=$(pwd)/src/:$PYTHONPATH
+            export PYTHONPATH
+            python -m coverage report
             python -m pip install --user coveralls
             PYTHONPATH=$(pwd)/src/:$PYTHONPATH
             export PYTHONPATH
@@ -153,9 +156,9 @@ workflows:
     jobs:
       - python_extra
       # - python_39  # Requires Python 3.0
-      - python_38
-      - python_37
-      - python_36
-      - python_35
-      - python_34
-      - python_27
+      # - python_38
+      # - python_37
+      # - python_36
+      # - python_35
+      # - python_34
+      # - python_27
