@@ -113,6 +113,7 @@ def extensions(coverage=False):
             extension.cython_directives = {"language_level": 3}
             if coverage:
                 extension.cython_directives["linetrace"] = True
+                extension.cython_directives["binding"] = True
             yield extension
 
 
