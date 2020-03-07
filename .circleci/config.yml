@@ -126,6 +126,7 @@ jobs:
           command: |
             PYTHONPATH=$(pwd)/src/:$PYTHONPATH
             export PYTHONPATH
+            echo $PYTHONPATH
             python -m coverage report --rcfile="$PWD/.coveragerc"
             python -m pip install --user coveralls
             PYTHONPATH=$(pwd)/src/:$PYTHONPATH
