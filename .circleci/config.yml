@@ -120,13 +120,13 @@ jobs:
             python -m pip install --user cython pytest-black pytest-cov
             PYTHONPATH=$(pwd)/src/:$PYTHONPATH
             export PYTHONPATH
-            python -m coverage run --rcfile=".coveragerc" -m pytest --black tests/
+            python -m coverage run --rcfile="$PWD/.coveragerc" -m pytest --black tests/
       - run:
           name: Coverage
           command: |
             PYTHONPATH=$(pwd)/src/:$PYTHONPATH
             export PYTHONPATH
-            python -m coverage report --rcfile=".coveragerc"
+            python -m coverage report --rcfile="$PWD/.coveragerc"
             python -m pip install --user coveralls
             PYTHONPATH=$(pwd)/src/:$PYTHONPATH
             export PYTHONPATH
