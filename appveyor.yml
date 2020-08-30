@@ -1,0 +1,70 @@
+# appveyor.yml
+---
+image: Visual Studio 2019
+
+environment:
+  MbedTLSVersion: "2.16.9"
+  # VS2015  v140
+  # VS2017  v141
+  # VS2019  v142
+  Configuration: Release
+  Platform: x64
+  PlatformToolset: v140
+  matrix:
+    # http://www.appveyor.com/docs/installed-software#python
+    # - PYTHON: "C:\\Python36-x64"
+    - PYTHON: "C:\\Python37-x64"
+    # - PYTHON: "C:\\Python38-x64"
+    # - PYTHON: "C:\\Python39-x64"
+    # - PYTHON: "C:\\Python27-x64"
+    # - PYTHON: "C:\\Python36-x64"
+
+install:
+  - ps: >
+      Start-FileDownload
+      "https://github.com/ARMmbed/mbedtls/archive/mbedtls-$($Env:MbedTLSVersion).zip"
+  - ps: >
+      Expand-Archive
+      "mbedtls-$($Env:MbedTLSVersion).zip"
+      -DestinationPath "."
+      -Force
+  - ps: |
+      $Env:MBEDTLS_ROOT=$(get-location).Path.TrimEnd("\") + "\mbedtls-mbedtls-$Env:MbedTLSVersion"
+      $Env:MBEDTLS_MSVC="$Env:MBEDTLS_ROOT\visualc\VS2010"
+      $Env:MBEDTLS_DESTDIR="$Env:MBEDTLS_MSVC\$Env:Platform\$Env:Configuration"
+  - ps: >
+      MSBuild.exe
+      /Logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+      /MaxCpuCount
+      /NoLogo
+      /p:Configuration=$Env:Configuration
+      /p:Platform=$Env:Platform
+      /p:PlatformToolset=$Env:PlatformToolset
+      /p:WholeProgramOptimization=False
+      /t:mbedTLS
+      /v:minimal
+      "$Env:MBEDTLS_MSVC\mbedTLS.sln"
+  - ps: |
+      echo $Env:INCLUDE
+      echo $Env:LIBPATH
+      $Env:INCLUDE="$Env:MBEDTLS_ROOT\include"
+      $Env:LIBPATH="$Env:MBEDTLS_DESTDIR"
+  - ps: |
+      dir C:\Python*
+      dir
+      echo $Env:INCLUDE
+      echo $Env:LIBPATH
+  - ps: |
+      & "$Env:PYTHON\python.exe" -m venv --copies venv
+      .\venv\Scripts\activate
+  - ps: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install -r requirements\build.txt
+      pip install -r requirements\tests.txt
+  - ps: |
+      # python setup.py install  -- works
+      python setup.py bdist_wheel
+  - ps: dir dist
+
+build: off

@@ -13,7 +13,7 @@ def _get_version():
     pattern = re.compile(r'^__version__ = ["]([.\w]+?)["]')
     with open(
         os.path.join(
-            os.path.dirname(__file__), "src", "mbedtls", "__init__.py"
+            os.path.dirname("."), "src", "mbedtls", "__init__.py"
         )
     ) as f:
         for line in f:
@@ -202,4 +202,5 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Topic :: Security :: Cryptography",
     ],
+    zip_safe=False,
 )
