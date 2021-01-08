@@ -70,6 +70,8 @@ install:
   - ps: |
       # python setup.py install  -- works
       python setup.py bdist_wheel
-  - ps: dir dist
+  - ps: |
+      echo "DONE"
+      dir dist
 
 build: off

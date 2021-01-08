@@ -46,7 +46,7 @@ install_requires = [
     'enum34 != 1.1.8; python_version < "3.0"',
     'pathlib2; python_version < "3.0"',
 ]
-package_data = {"mbedTLS.dll": "upstream/mbedTLS.dll"} if WINDOWS else {}
+package_data = {"": ["upstream/mbedTLS.dll"]} if WINDOWS else {}
 setup_requires = [
     # Setuptools 18.0 properly handles Cython extensions.
     "setuptools >= 18.0",
