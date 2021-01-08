@@ -38,6 +38,19 @@ install:
       /MaxCpuCount
       /NoLogo
       /p:Configuration=$Env:Configuration
+      /p:ConfigurationType=StaticLibrary
+      /p:Platform=$Env:Platform
+      /p:PlatformToolset=$Env:PlatformToolset
+      /p:WholeProgramOptimization=False
+      /t:mbedTLS
+      /v:minimal
+      "$Env:MBEDTLS_MSVC\mbedTLS.sln"
+  - ps: >
+      MSBuild.exe
+      /Logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+      /MaxCpuCount
+      /NoLogo
+      /p:Configuration=$Env:Configuration
       /p:ConfigurationType=DynamicLibrary
       /p:Platform=$Env:Platform
       /p:PlatformToolset=$Env:PlatformToolset
