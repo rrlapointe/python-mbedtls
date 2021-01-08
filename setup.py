@@ -12,9 +12,7 @@ from setuptools import Extension, find_packages, setup
 def _get_version():
     pattern = re.compile(r'^__version__ = ["]([.\w]+?)["]')
     with open(
-        os.path.join(
-            os.path.dirname("."), "src", "mbedtls", "__init__.py"
-        )
+        os.path.join(os.path.dirname("."), "src", "mbedtls", "__init__.py")
     ) as f:
         for line in f:
             match = pattern.match(line)
@@ -38,18 +36,22 @@ if "--with-coverage" in sys.argv:
 else:
     COVERAGE = False
 
+WINDOWS = platform.system() == "Windows"
+ENVSEP = ";" if WINDOWS else ":"
 
-setup_requires = [
-    # Setuptools 18.0 properly handles Cython extensions.
-    "setuptools >= 18.0",
-    # Cython 0.28 handles const memoryviews.
-    "cython >= 0.28.0",
-]
+
 install_requires = [
     "certifi",
     'contextlib2; python_version < "3.0"',
     'enum34 != 1.1.8; python_version < "3.0"',
     'pathlib2; python_version < "3.0"',
+]
+package_data = ["upstream/mbedTLS.dll"] if WINDOWS else []
+setup_requires = [
+    # Setuptools 18.0 properly handles Cython extensions.
+    "setuptools >= 18.0",
+    # Cython 0.28 handles const memoryviews.
+    "cython >= 0.28.0",
 ]
 tests_require = [
     "readme_renderer",
@@ -106,9 +108,6 @@ def extensions(coverage=False):
         with suppress(KeyError):
             return filter(None, os.environ[var].split(ENVSEP))
         return ()
-
-    WINDOWS = platform.system() == "Windows"
-    ENVSEP = ";" if WINDOWS else ":"
 
     libraries = (
         [
@@ -187,6 +186,7 @@ setup(
     download_url=DOWNLOAD_URL,
     ext_modules=list(extensions(COVERAGE)),
     options=options(COVERAGE),
+    package_data=package_data,
     package_dir={"": "src"},
     packages=find_packages("src"),
     setup_requires=setup_requires,

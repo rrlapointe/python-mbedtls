@@ -38,6 +38,7 @@ install:
       /MaxCpuCount
       /NoLogo
       /p:Configuration=$Env:Configuration
+      /p:ConfigurationType=DynamicLibrary
       /p:Platform=$Env:Platform
       /p:PlatformToolset=$Env:PlatformToolset
       /p:WholeProgramOptimization=False
@@ -49,6 +50,9 @@ install:
       echo $Env:LIBPATH
       $Env:INCLUDE="$Env:MBEDTLS_ROOT\include"
       $Env:LIBPATH="$Env:MBEDTLS_DESTDIR"
+  - ps: |
+      New-Item -Path "upstream" -Type Directory
+      Copy-Item "$Env:MBEDTLS_DESTDIR\mbedTLS.dll" -Destination "upstream"
   - ps: |
       dir C:\Python*
       dir
