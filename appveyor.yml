@@ -46,10 +46,11 @@ install:
       /v:minimal
       "$Env:MBEDTLS_MSVC\mbedTLS.sln"
   - ps: |
+      dir $Env:PYTHON
       echo $Env:INCLUDE
       echo $Env:LIBPATH
       $Env:INCLUDE="$Env:MBEDTLS_ROOT\include"
-      $Env:LIBPATH="$Env:MBEDTLS_DESTDIR"
+      $Env:LIBPATH="$Env:PYTHON;$Env:MBEDTLS_DESTDIR"
   - ps: |
       New-Item -Path "upstream" -Type Directory
       Copy-Item "$Env:MBEDTLS_DESTDIR\mbedTLS.dll" -Destination "upstream"
@@ -59,10 +60,10 @@ install:
       echo $Env:INCLUDE
       echo $Env:LIBPATH
   - ps: |
-      & "$Env:PYTHON\python.exe" -m venv --copies venv
+      & "$Env:PYTHON\python.exe" -m venv venv
       .\venv\Scripts\activate
   - ps: |
-      pip install --upgrade pip
+      pip install --upgrade --user pip
       pip install -r requirements.txt
       pip install -r requirements\build.txt
       pip install -r requirements\tests.txt
