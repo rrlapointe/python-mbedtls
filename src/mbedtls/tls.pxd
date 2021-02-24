@@ -330,7 +330,7 @@ cdef extern from "mbedtls/ssl.h" nogil:
         mbedtls_ssl_send_p f_send,
         mbedtls_ssl_recv_p f_recv,
         mbedtls_ssl_recv_timeout_p f_recv_timeout)
-
+    void mbedtls_ssl_set_mtu(mbedtls_ssl_context *ssl, unsigned short mtu);
     void mbedtls_ssl_set_timer_cb(
         # DTLS
         mbedtls_ssl_context *ssl,
@@ -356,6 +356,7 @@ cdef extern from "mbedtls/ssl.h" nogil:
     # mbedtls_ssl_set_hs_own_cert
     # mbedtls_ssl_set_hs_ca_chain
     # mbedtls_ssl_set_hs_authmode
+    const _x509.mbedtls_x509_crt *mbedtls_ssl_get_peer_cert(const mbedtls_ssl_context *ctx)
     const char* mbedtls_ssl_get_alpn_protocol(const mbedtls_ssl_context *ctx)
     size_t mbedtls_ssl_get_bytes_avail(const mbedtls_ssl_context *ctx)
     # mbedtls_ssl_get_verify_result
@@ -363,8 +364,6 @@ cdef extern from "mbedtls/ssl.h" nogil:
     const char* mbedtls_ssl_get_version(const mbedtls_ssl_context *ssl)
     # mbedtls_ssl_get_record_expansion
     size_t mbedtls_ssl_get_max_frag_len(const mbedtls_ssl_context *ssl)
-    # const _x509.mbedtls_x509_crt *mbedtls_ssl_get_peer_cert(
-    #     const mbedtls_ssl_context *ctx)
     int mbedtls_ssl_get_session(
         const mbedtls_ssl_context *ssl,
         mbedtls_ssl_session *session)

@@ -95,7 +95,10 @@ cdef int buffer_write(void *ctx, const unsigned char *buf, size_t len) nogil:
 cdef int buffer_read(void *ctx, unsigned char *buf, const size_t len) nogil:
     """Copy internal buffer to `buf`."""
     c_buf = <_tls._C_Buffers *> ctx
-    return _rb.c_readinto(c_buf.recv_ctx, buf, len)
+    cdef size_t nread = _rb.c_readinto(c_buf.recv_ctx, buf, len)
+    if nread == 0:
+        return _tls.MBEDTLS_ERR_SSL_WANT_READ
+    return nread
 
 
 @cython.boundscheck(False)
@@ -988,6 +991,7 @@ cdef class _BaseContext:
             &self._timer,
             _tls.mbedtls_timing_set_delay,
             _tls.mbedtls_timing_get_delay)
+        _tls.mbedtls_ssl_set_mtu(&self._ctx, 1000);
 
     def __dealloc__(self):
         """Free and clear the internal structures of ctx."""
@@ -1051,8 +1055,18 @@ cdef class _BaseContext:
                 _exc.check_error(ret)
         return written
 
-    # def getpeercert(self, binary_form=False):
-    #     crt = _tls.mbedtls_ssl_get_peer_cert()
+    def get_peer_public_key(self):
+        cdef const _x509.mbedtls_x509_crt *crt = _tls.mbedtls_ssl_get_peer_cert(&self._ctx)
+        cdef size_t osize = _pk.PUB_DER_MAX_BYTES
+        cdef unsigned char *c_buf = <unsigned char *>malloc(osize * sizeof(unsigned char))
+        if not c_buf:
+            raise MemoryError()
+        try:
+            ret = _exc.check_error(_pk.mbedtls_pk_write_pubkey_der(
+                &crt.pk, &c_buf[0], osize))
+            return _pk.RSA.from_DER(c_buf[osize - ret:osize])
+        finally:
+            free(c_buf)
 
     def _selected_npn_protocol(self):
         return None
@@ -1201,6 +1215,16 @@ cdef class ServerContext(_BaseContext):
         # PEP 543
         return TLSWrappedBuffer(self)
 
+    def _set_hostname(self, hostname):
+        """Set the hostname to check against the received server."""
+        if hostname is None:
+            return
+        # Note: `ssl_set_hostname()` makes a copy so it is safe
+        #       to call with the temporary `hostname_`.
+        hostname_ = hostname.encode("utf8")
+        cdef const char* c_hostname = hostname_
+        _exc.check_error(_tls.mbedtls_ssl_set_hostname(&self._ctx, c_hostname))
+
     def _setcookieparam(self, const unsigned char[:] info not None):
         if info.size == 0:
             info = b"\0"
@@ -1330,9 +1354,7 @@ cdef class TLSWrappedSocket:
         super().__init__()
         self._socket = socket
         self._buffer = buffer
-        # Default to pass-through BIO.
-        self._ctx.fd = <int>socket.fileno()
-        self._as_bio()
+        self._buffer._as_bio()
 
     def __cinit__(self, socket, TLSWrappedBuffer buffer):
         _net.mbedtls_net_init(&self._ctx)
@@ -1496,16 +1518,10 @@ cdef class TLSWrappedSocket:
     # PEP 543 adds the following methods.
 
     def _do_handshake_step(self):
-        self._as_bio()
-        state = self._buffer._do_handshake_step()
-        if state is HandshakeStep.HANDSHAKE_OVER:
-            self._buffer._as_bio()
-        return state
+        return self._buffer._do_handshake_step()
 
     def do_handshake(self):
-        self._as_bio()
         self._buffer.do_handshake()
-        self._buffer._as_bio()
 
     def setcookieparam(self, param):
         self._buffer._setcookieparam(param)
